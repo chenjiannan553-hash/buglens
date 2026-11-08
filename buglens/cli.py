@@ -35,6 +35,26 @@ from .validator import ValidationError, validate_or_raise
 # ---------------------------------------------------------------- 输出辅助
 
 
+def _configure_stdio() -> None:
+    """统一标准输出编码。
+
+    Windows 控制台默认代码页是 cp936/cp1252，直接打印中文会抛
+    UnicodeEncodeError。这里显式指定 UTF-8 并放宽错误策略：
+    宁可显示成问号，也不能让工具崩在最后一步。
+    """
+    for stream in (sys.stdout, sys.stderr):
+        if stream is None:
+            continue
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError, OSError):
+            # 被重定向到 StringIO 时没有 reconfigure，忽略即可
+            try:
+                stream.reconfigure(errors="replace")
+            except Exception:
+                pass
+
+
 def out(text: str = "") -> None:
     print(text)
 
@@ -618,6 +638,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    _configure_stdio()
     parser = build_parser()
     args = parser.parse_args(argv)
     try:
