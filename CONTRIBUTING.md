@@ -4,7 +4,7 @@
 
 ```bash
 python3 --version   # 需要 >= 3.9
-git clone https://github.com/OWNER/buglens.git
+git clone https://github.com/chenjiannan553-hash/buglens.git
 cd buglens
 python3 -m unittest discover -s tests -t . -v
 ```

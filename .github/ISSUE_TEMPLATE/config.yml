@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: 使用问题
-    url: https://github.com/OWNER/buglens/blob/main/docs/USAGE.md
+    url: https://github.com/chenjiannan553-hash/buglens/blob/main/docs/USAGE.md
     about: 命令用法、门禁规则、导入导出请先看使用手册
   - name: 架构与设计取舍
-    url: https://github.com/OWNER/buglens/blob/main/docs/ARCHITECTURE.md
+    url: https://github.com/chenjiannan553-hash/buglens/blob/main/docs/ARCHITECTURE.md
     about: 想改代码前建议先读这一篇

@@ -30,4 +30,4 @@
 - 严重级别固定 S1-S4，不开放自定义
 - Web 看板只读，写操作一律走 CLI
 
-[1.0.0]: https://github.com/OWNER/buglens/releases/tag/v1.0.0
+[1.0.0]: https://github.com/chenjiannan553-hash/buglens/releases/tag/v1.0.0

@@ -7,7 +7,7 @@
 ![tests](https://img.shields.io/badge/tests-118%20passed-brightgreen)
 ![license](https://img.shields.io/badge/license-MIT-blue)
 
-[![CI](https://github.com/OWNER/buglens/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/buglens/actions/workflows/ci.yml)
+[![CI](https://github.com/chenjiannan553-hash/buglens/actions/workflows/ci.yml/badge.svg)](https://github.com/chenjiannan553-hash/buglens/actions/workflows/ci.yml)
 
 ---
 
@@ -50,7 +50,7 @@ buglens 的判断是：**信息不结构化 = 没提 Bug。证据不足 = 不能
 ## 30 秒上手
 
 ```bash
-git clone https://github.com/OWNER/buglens.git
+git clone https://github.com/chenjiannan553-hash/buglens.git
 cd buglens
 
 python3 -m buglens demo          # 造示例数据
