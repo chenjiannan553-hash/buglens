@@ -1,0 +1,76 @@
+name: 缺陷报告
+description: 报告 buglens 自身的问题（不是用它记录业务缺陷）
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。请尽量填全，一句话"用不了"没法排查。
+
+  - type: input
+    id: version
+    attributes:
+      label: buglens 版本
+      description: 执行 `buglens --version` 的输出
+      placeholder: buglens 1.0.0
+    validations:
+      required: true
+
+  - type: input
+    id: env
+    attributes:
+      label: 运行环境
+      description: 操作系统 + Python 版本
+      placeholder: macOS 15.2 / Python 3.13.1
+    validations:
+      required: true
+
+  - type: textarea
+    id: command
+    attributes:
+      label: 执行的命令
+      description: 完整命令，包括所有参数
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际结果
+      description: 完整输出，包括退出码（`echo $?`）
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望结果
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 从干净数据库开始能否稳定复现
+      placeholder: |
+        1. rm -f buglens.db
+        2. python -m buglens demo
+        3. ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: 复现概率
+      options:
+        - 必现
+        - 偶现（>50%）
+        - 偶现（<50%）
+        - 只出现过一次
+    validations:
+      required: true

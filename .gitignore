@@ -1,0 +1,39 @@
+# 数据库与导出物
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+buglens-*.csv
+buglens-*.json
+buglens-*.md
+buglens-*.html
+export/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+dist/
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+.Python
+
+# 测试与工具
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+
+# 编辑器 / 系统
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~

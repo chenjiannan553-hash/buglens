@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: 测试 (Python ${{ matrix.python-version }} / ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.9", "3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: 语法检查（编译全部模块）
+        run: python -m compileall -q buglens
+
+      - name: 运行单元测试
+        run: python -m unittest discover -s tests -t . -v
+
+      - name: 端到端冒烟
+        run: |
+          python -m buglens demo
+          python -m buglens stats
+          python -m buglens list --severity S1
+          python -m buglens export --format md --out smoke.md
+          python -m buglens export --format html --out smoke.html
+
+      - name: 门禁应阻断（demo 数据含未闭环 S1）
+        shell: bash
+        run: |
+          set +e
+          python -m buglens gate --release 2.4.0
+          code=$?
+          if [ "$code" -ne 1 ]; then
+            echo "::error::门禁应返回 1，实际 $code"
+            exit 1
+          fi
+          echo "门禁正确阻断，退出码 $code"
+
+  lint:
+    name: 静态检查
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: 安装 ruff
+        run: pip install ruff==0.8.4
+      - name: ruff
+        run: ruff check buglens tests

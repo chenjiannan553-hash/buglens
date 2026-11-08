@@ -1,0 +1,7 @@
+﻿title,module,severity,reporter,env,steps,actual,expected,assignee,tags,status
+白屏无法进入首页,启动,S1,张验,iOS 17.2 / App 2.5.0,"1. 冷启动 App
+2. 观察首页",启动后白屏 3 秒后闪退,正常进入首页,李承,"启动,崩溃",new
+优惠券叠加后金额算错,订单,S2,王测,Android 14 / App 2.5.0,"1. 下单使用两张优惠券
+2. 查看合计金额",金额多减了 10 元,"按规则只能叠加一张券，金额计算正确",赵码,"订单,金额",new
+消息列表时间显示为 UTC,消息,S3,陈点,Web / Chrome 131,"1. 进入消息列表
+2. 查看消息时间",显示 UTC 时间比本地时间早 8 小时,"显示为本地时区时间",,"消息,时区",triaged

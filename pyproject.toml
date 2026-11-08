@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "buglens"
+version = "1.0.0"
+description = "零依赖的缺陷跟踪与发布验收 CLI：强校验录入、状态机、查重、发布门禁、本地看板"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "buglens contributors" }]
+keywords = ["bug-tracker", "qa", "release-gate", "cli", "sqlite", "zero-dependency"]
+classifiers = [
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Software Development :: Quality Assurance",
+  "Topic :: Software Development :: Testing",
+]
+dependencies = []
+
+[project.scripts]
+buglens = "buglens.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/"
+Documentation = "https://github.com/"
+
+[tool.setuptools]
+packages = ["buglens"]
