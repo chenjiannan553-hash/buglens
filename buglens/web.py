@@ -9,7 +9,6 @@ from __future__ import annotations
 import http.server
 import socketserver
 import threading
-from pathlib import Path
 
 from .db import Store
 from .report import to_html

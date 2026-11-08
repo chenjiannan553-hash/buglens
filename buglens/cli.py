@@ -19,8 +19,6 @@ from .demo import demo_bugs, demo_checks
 from .gate import evaluate, render as render_gate
 from .importer import dump_json, load
 from .models import (
-    FIELD_LABELS,
-    REQUIRED_FIELDS,
     SEVERITIES,
     STATUSES,
     STATUS_LABELS,
@@ -28,7 +26,7 @@ from .models import (
     utc_stamp,
 )
 from .report import to_csv, to_html, to_markdown, write
-from .state_machine import TransitionError, allowed_targets, assert_transition
+from .state_machine import TransitionError, assert_transition
 from .stats import render_summary, summarize, trend
 from .table import bar, render_table, truncate
 from .validator import ValidationError, validate_or_raise

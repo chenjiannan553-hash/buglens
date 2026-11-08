@@ -5,9 +5,7 @@ from __future__ import annotations
 import csv
 import io
 import json
-import tempfile
 import unittest
-from pathlib import Path
 
 from buglens.dedupe import duplicate_groups, find_similar, similarity
 from buglens.gate import evaluate
