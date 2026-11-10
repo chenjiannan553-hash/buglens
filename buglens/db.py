@@ -18,6 +18,16 @@ from .models import (
     now_iso,
 )
 
+
+def _like_escape(value: str) -> str:
+    r"""转义 LIKE 的通配符，配合 ``ESCAPE '\'`` 使用。
+
+    不转义时 ``a_b`` 会命中 ``axb``、``%`` 会匹配全部，
+    用户输入的搜索词必须按字面量处理。
+    """
+    return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS bugs (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -149,11 +159,14 @@ class Store:
             sql += " AND assignee = ?"
             params.append(assignee)
         if tag:
-            sql += " AND (',' || tags || ',') LIKE ?"
-            params.append(f"%,{tag},%")
+            sql += r" AND (',' || tags || ',') LIKE ? ESCAPE '\'"
+            params.append(f"%,{_like_escape(tag)},%")
         if keyword:
-            sql += " AND (title LIKE ? OR steps LIKE ? OR actual LIKE ? OR expected LIKE ?)"
-            like = f"%{keyword}%"
+            sql += (
+                r" AND (title LIKE ? ESCAPE '\' OR steps LIKE ? ESCAPE '\'"
+                r" OR actual LIKE ? ESCAPE '\' OR expected LIKE ? ESCAPE '\')"
+            )
+            like = f"%{_like_escape(keyword)}%"
             params.extend([like, like, like, like])
         sql += " ORDER BY CASE severity WHEN 'S1' THEN 1 WHEN 'S2' THEN 2" \
                " WHEN 'S3' THEN 3 ELSE 4 END, id DESC"

@@ -111,6 +111,27 @@ class TestQuery(StoreCase):
         self.store.assign(self.s3, "赵码")
         self.assertEqual(len(self.store.list_bugs(assignee="赵码")), 1)
 
+    def test_tag_underscore_is_literal(self):
+        """issue #1：a_b 不能因为 _ 是通配符而误命中 axb。"""
+        self.store.add_bug(make_bug(title="下划线标签的缺陷", tags="a_b"))
+        self.store.add_bug(make_bug(title="近似标签的缺陷", tags="axb"))
+        hits = self.store.list_bugs(tag="a_b")
+        self.assertEqual(len(hits), 1)
+        self.assertEqual(hits[0].tags, "a_b")
+
+    def test_tag_percent_is_literal(self):
+        """tag 里的 % 应按字面匹配，不能变成全匹配。"""
+        self.store.add_bug(make_bug(title="百分号标签的缺陷", tags="100%"))
+        self.assertEqual(len(self.store.list_bugs(tag="%")), 0)
+        self.assertEqual(len(self.store.list_bugs(tag="100%")), 1)
+
+    def test_keyword_wildcards_are_literal(self):
+        """全文搜索里的 _ 和 % 同样必须按字面处理。"""
+        self.store.add_bug(make_bug(title="包含 a_b 字样的缺陷"))
+        self.store.add_bug(make_bug(title="包含 axb 字样的缺陷"))
+        self.assertEqual(len(self.store.list_bugs(keyword="a_b")), 1)
+        self.assertEqual(len(self.store.list_bugs(keyword="%")), 0)
+
 
 class TestStatusHistory(StoreCase):
     def test_update_status_records_history(self):
