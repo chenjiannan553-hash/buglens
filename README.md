@@ -39,11 +39,15 @@ buglens 的判断是：**信息不结构化 = 没提 Bug。证据不足 = 不能
 | 验收清单 | 按版本管理 Checklist，联动门禁 | `check` |
 | 多维查询 | 状态/级别/模块/处理人/标签/关键词六维组合 | `list` / `search` |
 | 统计看板 | 分布、条形图、滞留时长、新增趋势 | `stats --trend 7` |
-| 四种导出 | Markdown / CSV / HTML / JSON | `export` |
+| 五种导出 | Markdown / CSV / HTML / JSON / JSONL | `export` |
 | 容错导入 | CSV/JSON 双格式，坏行隔离不污染整批 | `import --dry-run` |
 | 本地看板 | 单文件 HTML 可视化，127.0.0.1 只读服务 | `serve` |
 | 示例数据 | 一条命令造出可演示的数据集 | `demo` |
-| 工程配套 | 118 个单测 + 3 平台 CI + ruff | — |
+| **增量能力** | 批量操作、6 张报表、审计、模板、SLA、时间筛选等 **30 条** | `bulk` / `report` / `audit` / `template` / `tag` / `note` |
+| 工程配套 | 150 个单测 + 3 平台 CI + ruff | — |
+
+30 条增量能力的逐条清单与兼容性说明见 [docs/FEATURES.md](docs/FEATURES.md)。
+这一批**不改既有表结构、不改既有命令签名**，旧数据库打开即用。
 
 ---
 
@@ -215,7 +219,7 @@ bugs ──1:N──► history          （状态流转审计）
 ```
 buglens/
 ├── buglens/
-│   ├── cli.py            argparse 入口，17 个子命令
+│   ├── cli.py            argparse 入口，23 个子命令
 │   ├── models.py         数据类与常量
 │   ├── db.py             SQLite 持久化，唯一的数据访问层
 │   ├── validator.py      强校验
@@ -227,9 +231,11 @@ buglens/
 │   ├── importer.py       csv / json 解析
 │   ├── web.py            http.server 只读看板
 │   ├── table.py          中文等宽表格
+│   ├── extras.py         批量 / 报表 / 审计 / 模板（30 条增量能力）
 │   └── demo.py           示例数据
-├── tests/                118 个单测
-├── docs/                 使用手册与架构说明
+├── tests/                150 个单测
+├── scripts/              30 条能力端到端冒烟
+├── docs/                 使用手册、架构说明、功能清单
 └── .github/workflows/    CI
 ```
 

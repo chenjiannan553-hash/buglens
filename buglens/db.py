@@ -65,6 +65,13 @@ CREATE TABLE IF NOT EXISTS checklist (
     created_at  TEXT NOT NULL
 );
 
+-- 增量能力所用；旧库执行 IF NOT EXISTS 即可，无需迁移。
+CREATE TABLE IF NOT EXISTS templates (
+    name        TEXT PRIMARY KEY,
+    data        TEXT NOT NULL,
+    created_at  TEXT NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_bugs_status   ON bugs(status);
 CREATE INDEX IF NOT EXISTS idx_bugs_severity ON bugs(severity);
 CREATE INDEX IF NOT EXISTS idx_bugs_module   ON bugs(module);
@@ -79,6 +86,24 @@ def default_db_path() -> Path:
     if env:
         return Path(env).expanduser().resolve()
     return Path.cwd() / "buglens.db"
+
+
+DEFAULT_ORDER = (
+    " ORDER BY CASE severity WHEN 'S1' THEN 1 WHEN 'S2' THEN 2"
+    " WHEN 'S3' THEN 3 ELSE 4 END, id DESC"
+)
+SORT_ORDERS = {
+    "severity": DEFAULT_ORDER,
+    "created": " ORDER BY created_at DESC, id DESC",
+    "updated": " ORDER BY updated_at DESC, id DESC",
+    "title": " ORDER BY title, id",
+    "id": " ORDER BY id DESC",
+}
+
+
+def date_bound(value: str, end: bool = False) -> str:
+    """把 YYYY-MM-DD 补成可与库里 ISO 时间戳直接比较的完整值。"""
+    return value + ("T23:59:59" if end else "T00:00:00") if len(value) == 10 else value
 
 
 class Store:
@@ -142,8 +167,14 @@ class Store:
         tag: str | None = None,
         keyword: str | None = None,
         limit: int | None = None,
+        created_after: str | None = None,
+        created_before: str | None = None,
+        updated_after: str | None = None,
+        open_only: bool = False,
+        closed_only: bool = False,
+        sort: str | None = None,
     ) -> list[Bug]:
-        """多条件组合过滤。参数均为 None 时返回全部。"""
+        """多条件组合过滤。新增参数一律可选，保持旧调用方式不变。"""
         sql = "SELECT * FROM bugs WHERE 1=1"
         params: list[Any] = []
         if status:
@@ -168,8 +199,20 @@ class Store:
             )
             like = f"%{_like_escape(keyword)}%"
             params.extend([like, like, like, like])
-        sql += " ORDER BY CASE severity WHEN 'S1' THEN 1 WHEN 'S2' THEN 2" \
-               " WHEN 'S3' THEN 3 ELSE 4 END, id DESC"
+        if created_after:
+            sql += " AND created_at >= ?"
+            params.append(date_bound(created_after))
+        if created_before:
+            sql += " AND created_at <= ?"
+            params.append(date_bound(created_before, end=True))
+        if updated_after:
+            sql += " AND updated_at >= ?"
+            params.append(date_bound(updated_after))
+        if open_only:
+            sql += " AND status NOT IN ('verified','closed')"
+        elif closed_only:
+            sql += " AND status IN ('verified','closed')"
+        sql += SORT_ORDERS.get(sort, DEFAULT_ORDER)
         if limit:
             sql += " LIMIT ?"
             params.append(limit)
@@ -285,9 +328,67 @@ class Store:
             n += 1
         return n
 
+    # ---------- 增量能力（只加不删，旧库可直接升级） ----------
+
+    def set_tags(self, bug_id: int, tags: str) -> None:
+        self.conn.execute(
+            "UPDATE bugs SET tags = ?, updated_at = ? WHERE id = ?",
+            (tags, now_iso(), bug_id),
+        )
+        self.conn.commit()
+
+    def add_note(self, bug_id: int, actor: str, text: str) -> bool:
+        """追加一条备注到流转历史，不改变缺陷状态。"""
+        bug = self.get_bug(bug_id)
+        if bug is None:
+            return False
+        self.conn.execute(
+            """INSERT INTO history (bug_id, from_status, to_status, actor, note, at)
+               VALUES (?,?,?,?,?,?)""",
+            (bug_id, bug.status, bug.status, actor, text, now_iso()),
+        )
+        self.conn.commit()
+        return True
+
+    def all_history(self) -> list[HistoryEntry]:
+        rows = self.conn.execute("SELECT * FROM history ORDER BY at, id").fetchall()
+        return [
+            HistoryEntry(
+                id=r["id"], bug_id=r["bug_id"], from_status=r["from_status"],
+                to_status=r["to_status"], actor=r["actor"], note=r["note"], at=r["at"],
+            )
+            for r in rows
+        ]
+
+    def save_template(self, name: str, data: str) -> None:
+        self.conn.execute(
+            "INSERT INTO templates (name, data, created_at) VALUES (?,?,?) "
+            "ON CONFLICT(name) DO UPDATE SET data = excluded.data",
+            (name, data, now_iso()),
+        )
+        self.conn.commit()
+
+    def load_template(self, name: str) -> str | None:
+        row = self.conn.execute(
+            "SELECT data FROM templates WHERE name = ?", (name,)
+        ).fetchone()
+        return row["data"] if row else None
+
+    def list_templates(self) -> list[tuple[str, str]]:
+        rows = self.conn.execute(
+            "SELECT name, created_at FROM templates ORDER BY name"
+        ).fetchall()
+        return [(r["name"], r["created_at"]) for r in rows]
+
+    def delete_template(self, name: str) -> bool:
+        cur = self.conn.execute("DELETE FROM templates WHERE name = ?", (name,))
+        self.conn.commit()
+        return cur.rowcount > 0
+
     def reset(self) -> None:
         self.conn.executescript(
-            "DELETE FROM history; DELETE FROM bugs; DELETE FROM checklist;"
+            "DELETE FROM history; DELETE FROM bugs; DELETE FROM checklist; "
+            "DELETE FROM templates;"
         )
         self.conn.execute("DELETE FROM sqlite_sequence")
         self.conn.commit()
