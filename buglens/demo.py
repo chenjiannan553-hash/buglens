@@ -56,7 +56,7 @@ DEMO_BUGS: list[dict] = [
         "env": "iOS 17.2 / App 2.4.0",
         "steps": "1. 进入个人中心\n2. 上传新头像并保存\n3. 返回列表查看头像",
         "actual": "头像仍为旧图，杀掉进程重进才更新",
-        "expected": "保存后立即刷新为心头像",
+        "expected": "保存后立即刷新为新头像",
         "assignee": "赵码",
         "tags": "缓存",
         "status": "verified",
